@@ -43,10 +43,6 @@ order by Unit_price asc
 
 --Q5. Find out the average price for each model in the top5 manufacturers in terms of sales quantity and order by average price.
 
-select * from DIM_MANUFACTURER
-select * from DIM_MODEL
-select * from FACT_TRANSACTIONS
-
 select o.Manufacturer_Name, q.Model_Name, avg(r.TotalPrice) Average_Price from
 (select top 5 c.Manufacturer_Name, sum(a.Quantity) Quantity
 from FACT_TRANSACTIONS a
@@ -59,5 +55,22 @@ on o.Manufacturer_Name = p.Manufacturer_Name
 left join DIM_MODEL q on p.IDManufacturer = q.IDManufacturer
 left join FACT_TRANSACTIONS r on q.IDModel = r.IDModel
 group by o.Manufacturer_Name, q.Model_Name, r.TotalPrice
-order by Average_Price
+order by Average_Price desc
 
+--Q6. List the names of the customers and the average amount spent in 2009, where the average is higher than 500.
+
+select a.Customer_Name, avg(b.TotalPrice) Average_Amount, year(b.Date) Year from DIM_CUSTOMER a
+left join FACT_TRANSACTIONS b on a.IDCustomer = b.IDCustomer
+where year(b.Date) = 2009
+group by a.Customer_Name, b.TotalPrice, b.Date
+having avg(b.TotalPrice) > 500
+
+
+
+--
+select * from DIM_CUSTOMER
+select * from DIM_DATE
+select * from DIM_LOCATION
+select * from DIM_MANUFACTURER
+select * from DIM_MODEL
+select * from FACT_TRANSACTIONS
