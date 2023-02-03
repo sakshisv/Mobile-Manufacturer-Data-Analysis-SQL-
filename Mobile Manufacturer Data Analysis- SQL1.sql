@@ -41,4 +41,23 @@ select top 1 Model_Name, Unit_price
 from DIM_MODEL
 order by Unit_price asc
 
+--Q5. Find out the average price for each model in the top5 manufacturers in terms of sales quantity and order by average price.
+
+select * from DIM_MANUFACTURER
+select * from DIM_MODEL
+select * from FACT_TRANSACTIONS
+
+select o.Manufacturer_Name, q.Model_Name, avg(r.TotalPrice) Average_Price from
+(select top 5 c.Manufacturer_Name, sum(a.Quantity) Quantity
+from FACT_TRANSACTIONS a
+left join DIM_MODEL b on a.IDModel = b.IDModel
+left join DIM_MANUFACTURER c on b.IDManufacturer = c.IDManufacturer
+group by c.Manufacturer_Name, a.Quantity
+order by Quantity desc) o
+left join DIM_MANUFACTURER p
+on o.Manufacturer_Name = p.Manufacturer_Name
+left join DIM_MODEL q on p.IDManufacturer = q.IDManufacturer
+left join FACT_TRANSACTIONS r on q.IDModel = r.IDModel
+group by o.Manufacturer_Name, q.Model_Name, r.TotalPrice
+order by Average_Price
 
