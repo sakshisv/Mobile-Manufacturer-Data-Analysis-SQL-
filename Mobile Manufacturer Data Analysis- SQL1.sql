@@ -65,8 +65,29 @@ where year(b.Date) = 2009
 group by a.Customer_Name, b.TotalPrice, b.Date
 having avg(b.TotalPrice) > 500
 
+--Q7. List if there is any model that was in the top 5 in terms of quantity, simultaneously in 2008, 2009 and 2010
 
-
+select x.Model_Name from (
+select top 5 a.Model_Name, sum(b.Quantity) Quantity, year(b.Date) Year from DIM_MODEL a
+left join FACT_TRANSACTIONS b on a.IDModel = b.IDModel
+where year(b.Date) = 2008
+group by a.Model_Name, b.Quantity, b.Date
+order by b.Quantity desc) x
+INTERSECT
+select y.Model_Name from (
+select top 5 a.Model_Name, sum(b.Quantity) Quantity, c.YEAR from DIM_MODEL a
+left join FACT_TRANSACTIONS b on a.IDModel = b.IDModel
+left join DIM_DATE c on b.Date = c.DATE
+where c.YEAR = 2009
+group by a.Model_Name, b.Quantity, c.YEAR
+order by b.Quantity desc) y
+INTERSECT
+select z.Model_Name from (
+select top 5 a.Model_Name, sum(b.Quantity) Quantity, year(b.Date) Year from DIM_MODEL a
+left join FACT_TRANSACTIONS b on a.IDModel = b.IDModel
+where year(b.Date) = 2010
+group by a.Model_Name, b.Quantity, b.Date
+order by b.Quantity desc) z
 --
 select * from DIM_CUSTOMER
 select * from DIM_DATE
