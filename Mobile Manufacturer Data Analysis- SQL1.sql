@@ -92,28 +92,35 @@ order by 2 desc) z
 
 select Manufacturer_Name, Second_Top_Sales from
 (select top 1 Manufacturer_Name, Second_Top_Sales from (
-select top 2 c.Manufacturer_Name, sum(a.TotalPrice) Second_Top_Sales
-from FACT_TRANSACTIONS a
-left join DIM_MODEL b on a.IDModel = b.IDModel
-left join DIM_MANUFACTURER c on b.IDManufacturer = c.IDManufacturer
-where year(a.Date) = 2009
-group by c.Manufacturer_Name
+select top 2 a.Manufacturer_Name, sum(c.TotalPrice) Second_Top_Sales from DIM_MANUFACTURER a
+left join DIM_MODEL b on a.IDManufacturer = b.IDManufacturer
+left join FACT_TRANSACTIONS c on b.IDModel = c.IDModel
+left join DIM_DATE d on c.Date = d.DATE
+where d.YEAR = 2009
+group by a.Manufacturer_Name
 order by 2 desc) x
 order by 2 asc
 UNION
 select top 1 Manufacturer_Name, Second_Top_Sales from (
-select top 2 c.Manufacturer_Name, sum(a.TotalPrice) Second_Top_Sales
-from FACT_TRANSACTIONS a
-left join DIM_MODEL b on a.IDModel = b.IDModel
-left join DIM_MANUFACTURER c on b.IDManufacturer = c.IDManufacturer
-where year(a.Date) = 2010
-group by c.Manufacturer_Name
+select top 2 a.Manufacturer_Name, sum(c.TotalPrice) Second_Top_Sales from DIM_MANUFACTURER a
+left join DIM_MODEL b on a.IDManufacturer = b.IDManufacturer
+left join FACT_TRANSACTIONS c on b.IDModel = c.IDModel
+left join DIM_DATE d on c.Date = d.DATE
+where d.YEAR = 2010
+group by a.Manufacturer_Name
 order by 2 desc) y
 order by 2 asc) z
 
---Q9. 
+--Q9. Show the manufacturers that sold cellphone in 2010 but didn’t in 2009.
 
+select a.Manufacturer_Name from DIM_MANUFACTURER a
+left join DIM_MODEL b on a.IDManufacturer = b.IDManufacturer
+left join FACT_TRANSACTIONS c on b.IDModel = c.IDModel
+left join DIM_DATE d on c.Date = d.DATE
+where d.YEAR = 2010 and d.YEAR <> 2009
+group by a.Manufacturer_Name
 
+--Q10. 
 
 select * from DIM_CUSTOMER
 select * from DIM_DATE
