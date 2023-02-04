@@ -90,10 +90,28 @@ order by 2 desc) z
 
 --Q8. Show the manufacturer with the 2nd top sales in the year of 2009 and the manufacturer with the 2nd top sales in the year of 2010.
 
+select Manufacturer_Name, Second_Top_Sales from
+(select top 1 Manufacturer_Name, Second_Top_Sales from (
+select top 2 c.Manufacturer_Name, sum(a.TotalPrice) Second_Top_Sales
+from FACT_TRANSACTIONS a
+left join DIM_MODEL b on a.IDModel = b.IDModel
+left join DIM_MANUFACTURER c on b.IDManufacturer = c.IDManufacturer
+where year(a.Date) = 2009
+group by c.Manufacturer_Name
+order by 2 desc) x
+order by 2 asc
+UNION
+select top 1 Manufacturer_Name, Second_Top_Sales from (
+select top 2 c.Manufacturer_Name, sum(a.TotalPrice) Second_Top_Sales
+from FACT_TRANSACTIONS a
+left join DIM_MODEL b on a.IDModel = b.IDModel
+left join DIM_MANUFACTURER c on b.IDManufacturer = c.IDManufacturer
+where year(a.Date) = 2010
+group by c.Manufacturer_Name
+order by 2 desc) y
+order by 2 asc) z
 
---
-
-
+--Q9. 
 
 
 
