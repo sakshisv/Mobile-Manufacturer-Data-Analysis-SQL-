@@ -120,11 +120,16 @@ left join DIM_DATE d on c.Date = d.DATE
 where d.YEAR = 2010 and d.YEAR <> 2009
 group by a.Manufacturer_Name
 
---Q10. 
+--Q10. Find top 100 customers and their average spend, average quantity by each year. Also find the percentage of change in their spend.
 
-select * from DIM_CUSTOMER
-select * from DIM_DATE
-select * from DIM_LOCATION
-select * from DIM_MANUFACTURER
-select * from DIM_MODEL
-select * from FACT_TRANSACTIONS
+select x.*, round((lag(Average_Spend, 1, 0) over (order by Average_Spend) - Average_Spend)/100, 2) [% Change] from
+(select top 100 a.Customer_Name, avg(b.TotalPrice) Average_Spend, avg(b.Quantity) Average_Quantity, c.YEAR
+from DIM_CUSTOMER a
+left join FACT_TRANSACTIONS b on a.IDCustomer = b.IDCustomer
+left join DIM_DATE c on b.Date = c.DATE
+where b.Quantity <> 0
+group by a.Customer_Name, c.YEAR) x
+order by 1
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
