@@ -1,3 +1,5 @@
+-------- MOBILE MANUFACTURER CASE STUDY --------
+
 use MOBILE_MANUFACTURER
 
 select * from DIM_CUSTOMER
@@ -34,7 +36,6 @@ left join FACT_TRANSACTIONS b on a.IDLocation = b.IDLocation
 left join DIM_MODEL c on b.IDModel = c.IDModel
 group by  c.Model_Name, a.ZipCode, a.State
 
-
 --Q4. Show the cheapest cellphone.
  
 select top 1 Model_Name, Unit_price
@@ -43,19 +44,21 @@ order by Unit_price asc
 
 --Q5. Find out the average price for each model in the top5 manufacturers in terms of sales quantity and order by average price.
 
-select o.Manufacturer_Name, q.Model_Name, avg(r.TotalPrice) Average_Price from
-(select top 5 c.Manufacturer_Name, sum(a.Quantity) Quantity
-from FACT_TRANSACTIONS a
-left join DIM_MODEL b on a.IDModel = b.IDModel
-left join DIM_MANUFACTURER c on b.IDManufacturer = c.IDManufacturer
-group by c.Manufacturer_Name, a.Quantity
-order by Quantity desc) o
-left join DIM_MANUFACTURER p
-on o.Manufacturer_Name = p.Manufacturer_Name
-left join DIM_MODEL q on p.IDManufacturer = q.IDManufacturer
-left join FACT_TRANSACTIONS r on q.IDModel = r.IDModel
-group by o.Manufacturer_Name, q.Model_Name, r.TotalPrice
-order by Average_Price desc
+With cte as (
+select top 5 x.Manufacturer_Name from (
+select a.Manufacturer_Name, b.Model_Name, sum(c.Quantity)SalesQuantity, avg(c.TotalPrice)AveragePrice,
+DENSE_RANK() over (partition by a.Manufacturer_Name order by sum(c.Quantity) desc) as Rank
+from DIM_MANUFACTURER a
+left join DIM_MODEL b on a.IDManufacturer = b.IDManufacturer
+left join FACT_TRANSACTIONS c on b.IDModel = c.IDModel
+group by a.Manufacturer_Name, b.Model_Name) x
+where rank = 1)
+
+select b.Model_Name, avg(b.Unit_price) Average_Price from DIM_MANUFACTURER a
+left join DIM_MODEL b
+on a.IDManufacturer = b.IDManufacturer
+where b.Model_Name in (select Model_Name from cte)
+group by b.Model_Name
 
 --Q6. List the names of the customers and the average amount spent in 2009, where the average is higher than 500.
 
@@ -122,14 +125,14 @@ group by a.Manufacturer_Name
 
 --Q10. Find top 100 customers and their average spend, average quantity by each year. Also find the percentage of change in their spend.
 
-select x.*, round((lag(Average_Spend, 1, 0) over (order by Average_Spend) - Average_Spend)/100, 2) [% Change] from
-(select top 100 a.Customer_Name, avg(b.TotalPrice) Average_Spend, avg(b.Quantity) Average_Quantity, c.YEAR
-from DIM_CUSTOMER a
-left join FACT_TRANSACTIONS b on a.IDCustomer = b.IDCustomer
-left join DIM_DATE c on b.Date = c.DATE
-where b.Quantity <> 0
-group by a.Customer_Name, c.YEAR) x
+select a.*, round(((lag(a.AvgSpend,1,0) over (order by a.AvgSpend)- a.AvgSpend)/a.AvgSpend)*100,2) [% Change] from
+(select top 100 a.Customer_Name, avg(b.TotalPrice)AvgSpend, avg(b.Quantity)AvgQuantity, c.YEAR from DIM_CUSTOMER a
+left join FACT_TRANSACTIONS b
+on a.IDCustomer = b.IDCustomer
+left join DIM_DATE c
+on b.Date = c.DATE
+where b.Quantity<>0
+group by a.Customer_Name, c.YEAR)a
 order by 1
-
 
 --------------------------------------------------------------------------------------------------------------------------------------------
